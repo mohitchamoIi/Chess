@@ -4,6 +4,7 @@ let mode = 'two'; // 'two' or 'ai'
 let humanColor = 'w';
 let selected = null;
 let legalDestinations = [];
+let lastMove = null;
 
 const boardEl = document.getElementById('board');
 const statusEl = document.getElementById('status');
@@ -38,11 +39,22 @@ function renderBoard(){
       const p = board[r][c];
       if(p){
         const key = p.color === 'w' ? p.type.toUpperCase() : p.type;
-        sq.textContent = UNICODE[key];
+        const pieceEl = document.createElement('span');
+        pieceEl.className = 'piece';
+        pieceEl.textContent = UNICODE[key];
+        sq.appendChild(pieceEl);
       }
       sq.addEventListener('click', onSquareClick);
       boardEl.appendChild(sq);
     }
+  }
+  // show last move
+  document.querySelectorAll('.square.last-move').forEach(s=>s.classList.remove('last-move'));
+  if(lastMove){
+    const f = document.querySelector(`[data-square='${lastMove.from}']`);
+    const t = document.querySelector(`[data-square='${lastMove.to}']`);
+    if(f) f.classList.add('last-move');
+    if(t) t.classList.add('last-move');
   }
   highlightLegal();
   updateStatus();
@@ -69,14 +81,16 @@ function onSquareClick(e){
     if(selected === sq){ selected = null; legalDestinations = []; renderBoard(); return; }
     // if the clicked square is a legal destination, move
     if(legalDestinations.includes(sq)){
-      const moveObj = {from: selected, to: sq, promotion: 'q'};
-      game.move(moveObj);
+      const from = selected, to = sq;
+      const moveObj = {from, to, promotion: 'q'};
+      const mv = game.move(moveObj);
       selected = null; legalDestinations = [];
-      renderBoard();
-
-      if(mode === 'ai' && !game.game_over()){
-        setTimeout(doAIMove, 200);
-      }
+      animateMove(from, to, mv && mv.captured).then(()=>{
+        renderBoard();
+        if(mode === 'ai' && !game.game_over()){
+          setTimeout(doAIMove, 200);
+        }
+      });
       return;
     }
     // otherwise try to select another piece
@@ -114,9 +128,60 @@ async function doAIMove(){
   // getBestMove is provided by ai.js
   const best = window.getBestMove(game, depth);
   if(best){
-    game.move({from:best.from,to:best.to,promotion:best.promotion});
+    const mv = game.move({from:best.from,to:best.to,promotion:best.promotion});
+    await animateMove(best.from, best.to, mv && mv.captured);
     renderBoard();
   }
+}
+
+// Helpers for animations
+function getSquareElement(square){
+  return document.querySelector(`[data-square='${square}']`);
+}
+
+function animateMove(from, to, captured=false){
+  return new Promise(resolve => {
+    const fromEl = getSquareElement(from);
+    const toEl = getSquareElement(to);
+    if(!fromEl || !toEl){ lastMove = {from,to}; resolve(); return; }
+    const pieceChar = fromEl.textContent;
+    const boardRect = boardEl.getBoundingClientRect();
+    const fromRect = fromEl.getBoundingClientRect();
+    const toRect = toEl.getBoundingClientRect();
+
+    const floating = document.createElement('div');
+    floating.className = 'floating-piece';
+    floating.textContent = pieceChar;
+    floating.style.left = (fromRect.left - boardRect.left) + 'px';
+    floating.style.top = (fromRect.top - boardRect.top) + 'px';
+    floating.style.width = fromRect.width + 'px';
+    floating.style.height = fromRect.height + 'px';
+    floating.style.fontSize = window.getComputedStyle(fromEl).fontSize;
+    boardEl.appendChild(floating);
+
+    // clear source visually
+    fromEl.innerHTML = '';
+
+    // animate captured piece (scale down)
+    if(captured){
+      const capturedPiece = toEl.querySelector('.piece');
+      if(capturedPiece){ capturedPiece.classList.add('captured'); }
+    }
+
+    requestAnimationFrame(()=>{
+      const dx = toRect.left - fromRect.left;
+      const dy = toRect.top - fromRect.top;
+      floating.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+
+    floating.addEventListener('transitionend', ()=>{
+      floating.remove();
+      lastMove = {from,to};
+      // cleanup captured visuals
+      setTimeout(()=>{ if(toEl){ const cp = toEl.querySelector('.captured'); if(cp) cp.remove(); } }, 200);
+      resolve();
+    }, {once:true});
+  });
 }
 
 // Controls
