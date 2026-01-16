@@ -276,9 +276,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Filter out moves that would leave king in check
-    const isWhitePiece = isWhite(piece);
-    moves = moves.filter(move => !wouldBeInCheck(r, c, move.r, move.c, isWhitePiece));
+    // Filter out moves that would leave king in check (only for non-kings to avoid recursion)
+    if (piece !== "♔" && piece !== "♚") {
+      const isWhitePiece = isWhite(piece);
+      moves = moves.filter(move => {
+        const testBoard = board.map(row => [...row]);
+        testBoard[move.r][move.c] = testBoard[r][c];
+        testBoard[r][c] = "";
+        
+        const kingPos = findKingOnBoard(testBoard, isWhitePiece);
+        if (!kingPos) return true;
+        
+        return !isSquareUnderAttack(testBoard, kingPos.r, kingPos.c, !isWhitePiece);
+      });
+    }
 
     return moves;
   }
