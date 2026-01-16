@@ -80,6 +80,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function checkGameEnd() {
+    // Check if a king is missing
+    const whiteKing = findKing(true);
+    const blackKing = findKing(false);
+    
+    if (!whiteKing) {
+      gameOver = true;
+      winnerTitle.textContent = "Game Over!";
+      winnerMessage.textContent = "Black wins! White king captured!";
+      return true;
+    }
+    
+    if (!blackKing) {
+      gameOver = true;
+      winnerTitle.textContent = "Game Over!";
+      winnerMessage.textContent = "White wins! Black king captured!";
+      return true;
+    }
+
     if (hasLegalMoves(whiteTurn)) {
       if (isInCheck(whiteTurn)) {
         notificationsEl.textContent = `⚠️ ${whiteTurn ? "White" : "Black"} is in CHECK!`;
