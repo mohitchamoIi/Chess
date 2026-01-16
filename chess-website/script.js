@@ -193,6 +193,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return false;
   }
 
+  function wouldBeInCheck(fromR, fromC, toR, toC, isWhitePlayer) {
+    const testBoard = board.map(row => [...row]);
+    testBoard[toR][toC] = testBoard[fromR][fromC];
+    testBoard[fromR][fromC] = "";
+    
+    const king = findKingOnBoard(testBoard, isWhitePlayer);
+    if (!king) return false;
+    
+    return isSquareUnderAttack(testBoard, king.r, king.c, !isWhitePlayer);
+  }
+
   function getLegalMoves(r, c) {
     const piece = board[r][c];
     const moves = [];
@@ -264,6 +275,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
+
+    // Filter out moves that would leave king in check
+    const isWhitePiece = isWhite(piece);
+    moves = moves.filter(move => !wouldBeInCheck(r, c, move.r, move.c, isWhitePiece));
 
     return moves;
   }
