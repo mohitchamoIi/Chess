@@ -557,6 +557,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   playAgainBtn.onclick = () => {
     winnerScreen.classList.add("hidden");
+    boardScreen.classList.remove("hidden");
     resetGame();
   };
 
