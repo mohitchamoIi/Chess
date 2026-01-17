@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (r===6 && !board[r-2][c] && !board[r-1][c]) moves.push({r:r-2,c});
       [[-1,-1],[-1,1]].forEach(([dr,dc])=>{
         const nr=r+dr,nc=c+dc;
-        if(board[nr]?.[nc] && isBlack(board[nr][nc])) moves.push({r:nr,c:nc});
+        if(nr>=0 && nr<8 && nc>=0 && nc<8 && board[nr][nc] && isBlack(board[nr][nc])) moves.push({r:nr,c:nc});
       });
     }
 
@@ -256,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (r===1 && !board[r+2][c] && !board[r+1][c]) moves.push({r:r+2,c});
       [[1,-1],[1,1]].forEach(([dr,dc])=>{
         const nr=r+dr,nc=c+dc;
-        if(board[nr]?.[nc] && isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
+        if(nr>=0 && nr<8 && nc>=0 && nc<8 && board[nr][nc] && isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
       });
     }
 
@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (r === 6 && !testBoard[r-2][c] && !testBoard[r-1][c]) moves.push({r:r-2,c});
       [[-1,-1],[-1,1]].forEach(([dr,dc])=>{
         const nr=r+dr,nc=c+dc;
-        if(testBoard[nr]?.[nc] && isBlack(testBoard[nr][nc])) moves.push({r:nr,c:nc});
+        if(nr>=0 && nr<8 && nc>=0 && nc<8 && testBoard[nr][nc] && isBlack(testBoard[nr][nc])) moves.push({r:nr,c:nc});
       });
     }
 
@@ -420,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (r === 1 && !testBoard[r+2][c] && !testBoard[r+1][c]) moves.push({r:r+2,c});
       [[1,-1],[1,1]].forEach(([dr,dc])=>{
         const nr=r+dr,nc=c+dc;
-        if(testBoard[nr]?.[nc] && isWhite(testBoard[nr][nc])) moves.push({r:nr,c:nc});
+        if(nr>=0 && nr<8 && nc>=0 && nc<8 && testBoard[nr][nc] && isWhite(testBoard[nr][nc])) moves.push({r:nr,c:nc});
       });
     }
 
