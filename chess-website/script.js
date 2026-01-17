@@ -188,7 +188,11 @@ document.addEventListener("DOMContentLoaded", () => {
     board[tr][tc] = board[sr][sc];
     board[sr][sc] = "";
     whiteTurn = !whiteTurn;
-    statusEl.textContent = whiteTurn ? "White to move" : "Black to move";
+    if (isLocalMultiplayer) {
+      statusEl.textContent = whiteTurn ? "White Player's Turn ⚪" : "Black Player's Turn ⚫";
+    } else {
+      statusEl.textContent = whiteTurn ? "White to move" : "Black to move";
+    }
   }
 
   function isWhite(p) { return "♙♖♘♗♕♔".includes(p); }
