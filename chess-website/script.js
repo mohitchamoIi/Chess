@@ -42,9 +42,9 @@ document.addEventListener("DOMContentLoaded", () => {
     validMoves = [];
     whiteTurn = true;
     gameOver = false;
-    statusEl.textContent = isLocalMultiplayer ? "White Player's Turn ⚪" : "White to move";
     notificationsEl.textContent = "";
     renderBoard();
+    updateStatus();
   }
 
   function findKing(isWhiteKing) {
@@ -129,21 +129,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderBoard() {
-    boardEl.innerHTML = "";
+    try {
+      boardEl.innerHTML = "";
 
-    board.forEach((row, r) => {
-      row.forEach((piece, c) => {
-        const sq = document.createElement("div");
-        sq.className = "square " + ((r + c) % 2 === 0 ? "light" : "dark-square");
+      board.forEach((row, r) => {
+        row.forEach((piece, c) => {
+          const sq = document.createElement("div");
+          sq.className = "square " + ((r + c) % 2 === 0 ? "light" : "dark-square");
 
-        if (selected && selected.r === r && selected.c === c) sq.classList.add("selected");
-        if (validMoves.some(m => m.r === r && m.c === c)) sq.classList.add("valid");
+          if (selected && selected.r === r && selected.c === c) sq.classList.add("selected");
+          if (validMoves.some(m => m.r === r && m.c === c)) sq.classList.add("valid");
 
-        sq.textContent = piece;
-        sq.onclick = () => onSquareClick(r, c);
-        boardEl.appendChild(sq);
+          sq.textContent = piece;
+          sq.onclick = () => onSquareClick(r, c);
+          boardEl.appendChild(sq);
+        });
       });
-    });
+    } catch(e) {
+      console.error("Error in renderBoard:", e);
+    }
   }
 
   function onSquareClick(r, c) {
@@ -250,14 +254,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getLegalMoves(r, c) {
-    const piece = board[r][c];
-    const moves = [];
+    try {
+      const piece = board[r][c];
+      const moves = [];
 
-    const dirs = {
-      rook: [[1,0],[-1,0],[0,1],[0,-1]],
-      bishop: [[1,1],[1,-1],[-1,1],[-1,-1]],
-      queen: [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]
-    };
+      const dirs = {
+        rook: [[1,0],[-1,0],[0,1],[0,-1]],
+        bishop: [[1,1],[1,-1],[-1,1],[-1,-1]],
+        queen: [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]
+      };
 
     function slide(directions) {
       directions.forEach(([dr, dc]) => {
@@ -337,6 +342,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return moves;
+    } catch(e) {
+      console.error("Error in getLegalMoves:", e);
+      return [];
+    }
   }
 
   function pieceValue(p) {
