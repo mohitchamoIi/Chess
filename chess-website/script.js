@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("themeToggle");
   
   // Defensive check to ensure all elements are loaded
-  if (!boardEl || !statusEl) {
+  if (!boardEl || !statusEl || !startBtn) {
     console.error("Required DOM elements not found");
     return;
   }
@@ -551,33 +551,43 @@ document.addEventListener("DOMContentLoaded", () => {
     resetGame();
   };
 
-  startLocalMultiplayerBtn.onclick = () => {
-    isLocalMultiplayer = true;
-    home.classList.add("hidden");
-    boardScreen.classList.remove("hidden");
-    winnerScreen.classList.add("hidden");
-    resetGame();
-  };
+  if (startLocalMultiplayerBtn) {
+    startLocalMultiplayerBtn.onclick = () => {
+      isLocalMultiplayer = true;
+      home.classList.add("hidden");
+      boardScreen.classList.remove("hidden");
+      winnerScreen.classList.add("hidden");
+      resetGame();
+    };
+  }
 
-  backBtn.onclick = () => {
-    boardScreen.classList.add("hidden");
-    home.classList.remove("hidden");
-    winnerScreen.classList.add("hidden");
-  };
+  if (backBtn) {
+    backBtn.onclick = () => {
+      boardScreen.classList.add("hidden");
+      home.classList.remove("hidden");
+      winnerScreen.classList.add("hidden");
+    };
+  }
 
-  playAgainBtn.onclick = () => {
-    winnerScreen.classList.add("hidden");
-    boardScreen.classList.remove("hidden");
-    resetGame();
-  };
+  if (playAgainBtn) {
+    playAgainBtn.onclick = () => {
+      winnerScreen.classList.add("hidden");
+      boardScreen.classList.remove("hidden");
+      resetGame();
+    };
+  }
 
-  exitBtn.onclick = () => {
-    boardScreen.classList.add("hidden");
-    winnerScreen.classList.add("hidden");
-    home.classList.remove("hidden");
-  };
+  if (exitBtn) {
+    exitBtn.onclick = () => {
+      boardScreen.classList.add("hidden");
+      winnerScreen.classList.add("hidden");
+      home.classList.remove("hidden");
+    };
+  }
 
-  themeToggle.onclick = () => {
-    document.body.classList.toggle("dark");
-  };
+  if (themeToggle) {
+    themeToggle.onclick = () => {
+      document.body.classList.toggle("dark");
+    };
+  }
 });
