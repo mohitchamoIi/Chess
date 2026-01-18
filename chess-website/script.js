@@ -17,9 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Defensive check to ensure all elements are loaded
   if (!boardEl || !statusEl || !startBtn) {
-    console.error("Required DOM elements not found");
+    console.error("Required DOM elements not found - Board:", !!boardEl, "Status:", !!statusEl, "StartBtn:", !!startBtn);
     return;
   }
+  
+  console.log("Chess game initialized successfully");
 
   const initialBoard = [
     ["♜","♞","♝","♛","♚","♝","♞","♜"],
@@ -544,11 +546,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   startBtn.onclick = () => {
+    console.log("Start Game clicked");
     isLocalMultiplayer = false;
     home.classList.add("hidden");
     boardScreen.classList.remove("hidden");
     winnerScreen.classList.add("hidden");
     resetGame();
+    console.log("Board rendered with", board.flat().filter(p => p).length, "pieces");
   };
 
   if (startLocalMultiplayerBtn) {
