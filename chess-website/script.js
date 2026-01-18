@@ -347,17 +347,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // King safety bonus
-    const blackKingPos = findKingOnBoard(testBoard, false);
-    const whiteKingPos = findKingOnBoard(testBoard, true);
-    
-    if (blackKingPos) {
-      const blackSafety = countDefenders(testBoard, blackKingPos.r, blackKingPos.c, false);
-      score += (forWhite ? -1 : 1) * blackSafety * 8;
-    }
-    if (whiteKingPos) {
-      const whiteSafety = countDefenders(testBoard, whiteKingPos.r, whiteKingPos.c, true);
-      score += (forWhite ? 1 : -1) * whiteSafety * 8;
+    // King safety bonus - only add if kings exist
+    if (testBoard && testBoard.some && testBoard.some(row => row && row.includes && (row.includes("♔") || row.includes("♚")))) {
+      const blackKingPos = findKingOnBoard(testBoard, false);
+      const whiteKingPos = findKingOnBoard(testBoard, true);
+      
+      if (blackKingPos) {
+        const blackSafety = countDefenders(testBoard, blackKingPos.r, blackKingPos.c, false);
+        score += (forWhite ? -1 : 1) * blackSafety * 8;
+      }
+      if (whiteKingPos) {
+        const whiteSafety = countDefenders(testBoard, whiteKingPos.r, whiteKingPos.c, true);
+        score += (forWhite ? 1 : -1) * whiteSafety * 8;
+      }
     }
 
     return score;
