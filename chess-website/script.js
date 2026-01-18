@@ -14,6 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const playAgainBtn = document.getElementById("playAgainBtn");
   const exitBtn = document.getElementById("exitBtn");
   const themeToggle = document.getElementById("themeToggle");
+  
+  // Defensive check to ensure all elements are loaded
+  if (!boardEl || !statusEl) {
+    console.error("Required DOM elements not found");
+    return;
+  }
 
   const initialBoard = [
     ["♜","♞","♝","♛","♚","♝","♞","♜"],
@@ -347,19 +353,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // King safety bonus - only add if kings exist
-    if (testBoard && testBoard.some && testBoard.some(row => row && row.includes && (row.includes("♔") || row.includes("♚")))) {
-      const blackKingPos = findKingOnBoard(testBoard, false);
-      const whiteKingPos = findKingOnBoard(testBoard, true);
-      
-      if (blackKingPos) {
-        const blackSafety = countDefenders(testBoard, blackKingPos.r, blackKingPos.c, false);
-        score += (forWhite ? -1 : 1) * blackSafety * 8;
-      }
-      if (whiteKingPos) {
-        const whiteSafety = countDefenders(testBoard, whiteKingPos.r, whiteKingPos.c, true);
-        score += (forWhite ? 1 : -1) * whiteSafety * 8;
-      }
+    // King safety bonus
+    const blackKingPos = findKingOnBoard(testBoard, false);
+    const whiteKingPos = findKingOnBoard(testBoard, true);
+    
+    if (blackKingPos) {
+      const blackSafety = countDefenders(testBoard, blackKingPos.r, blackKingPos.c, false);
+      score += (forWhite ? -1 : 1) * blackSafety * 8;
+    }
+    if (whiteKingPos) {
+      const whiteSafety = countDefenders(testBoard, whiteKingPos.r, whiteKingPos.c, true);
+      score += (forWhite ? 1 : -1) * whiteSafety * 8;
     }
 
     return score;
