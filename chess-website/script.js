@@ -264,19 +264,19 @@ document.addEventListener("DOMContentLoaded", () => {
         queen: [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]
       };
 
-    function slide(directions) {
-      directions.forEach(([dr, dc]) => {
-        let nr = r + dr, nc = c + dc;
-        while (nr>=0 && nr<8 && nc>=0 && nc<8) {
-          if (!board[nr][nc]) moves.push({r:nr,c:nc});
-          else {
-            if (isWhite(piece) !== isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
-            break;
+      function slide(directions) {
+        directions.forEach(([dr, dc]) => {
+          let nr = r + dr, nc = c + dc;
+          while (nr>=0 && nr<8 && nc>=0 && nc<8) {
+            if (!board[nr][nc]) moves.push({r:nr,c:nc});
+            else {
+              if (isWhite(piece) !== isWhite(board[nr][nc])) moves.push({r:nr,c:nc});
+              break;
+            }
+            nr += dr; nc += dc;
           }
-          nr += dr; nc += dc;
-        }
-      });
-    }
+        });
+      }
 
     if (piece === "♙") {
       if (r>0 && !board[r-1][c]) moves.push({r:r-1,c});
@@ -296,6 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    if (piece === "♖" || piece === "♜") slide(dirs.rook);
     if (piece === "♖" || piece === "♜") slide(dirs.rook);
     if (piece === "♗" || piece === "♝") slide(dirs.bishop);
     if (piece === "♕" || piece === "♛") slide(dirs.queen);
@@ -346,6 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error in getLegalMoves:", e);
       return [];
     }
+  }
   }
 
   function pieceValue(p) {
