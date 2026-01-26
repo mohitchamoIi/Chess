@@ -14,6 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const playAgainBtn = document.getElementById("playAgainBtn");
   const exitBtn = document.getElementById("exitBtn");
   const themeToggle = document.getElementById("themeToggle");
+  const undoBtn = document.getElementById("undoBtn");
+  const difficultySelect = document.getElementById("difficulty");
+  const statsEl = document.getElementById("stats");
+  const moveHistoryEl = document.getElementById("moveHistory");
   
   // Defensive check to ensure all elements are loaded
   if (!boardEl || !statusEl || !startBtn) {
@@ -35,6 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   let board, selected = null, validMoves = [], whiteTurn = true, gameOver = false, isLocalMultiplayer = false;
+  let moveHistory = [];
+  let boardHistory = [];
+  let difficulty = "medium";
+  const difficultyDepth = { easy: 1, medium: 2, hard: 3 };
 
   function resetGame() {
     board = JSON.parse(JSON.stringify(initialBoard));
@@ -42,7 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
     validMoves = [];
     whiteTurn = true;
     gameOver = false;
+    moveHistory = [];
+    boardHistory = [];
     notificationsEl.textContent = "";
+    updateStats();
+    updateMoveHistory();
     renderBoard();
     updateStatus();
   }
@@ -212,9 +224,81 @@ document.addEventListener("DOMContentLoaded", () => {
       statusEl.textContent = "Selected - no valid moves";
     } else {
       statusEl.textContent = isLocalMultiplayer ? (whiteTurn ? "White Player's Turn ⚪" : "Black Player's Turn ⚫") : (whiteTurn ? "White to move" : "Black to move");
-    }
+    // Save board state before move
+    boardHistory.push(board.map(row => [...row]));
+    
+    const piece = board[sr][sc];
+    const captured = board[tr][tc] ? "x" : "-";
+    const toSquare = String.fromCharCode(97 + tc) + (8 - tr);
+    const fromSquare = String.fromCharCode(97 + sc) + (8 - sr);
+    
+    board[tr][tc] = board[sr][sc];
+    board[sr][sc] = "";
+    whiteTurn = !whiteTurn;
+    
+    // Record move in algebraic notation
+    moveHistory.push({
+      pieceupdateMoveHistory() {
+    moveHistoryEl.innerHTML = "";
+    moveHistory.forEach((move, idx) => {
+      const div = document.createElement("div");
+      div.className = "move-item";
+      div.textContent = `${idx + 1}. ${move.piece} ${move.from}${move.captured}${move.to}`;
+      moveHistoryEl.appendChild(div);
+    });
+    // Auto-scroll to bottom
+    moveHistoryEl.scrollTop = moveHistoryEl.scrollHeight;
   }
 
+  function updateStats() {
+    let whitePieces = 0, blackPieces = 0;
+    let whiteValue = 0, blackValue = 0;
+    
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const piece = board[r][c];
+        if (isWhite(piece)) {
+          whitePieces++;
+          whiteValue += pieceValue(piece);
+        } else if (isBlack(piece)) {
+          blackPieces++;
+          blackValue += pieceValue(piece);
+        }
+      }
+    }
+    
+    statsEl.innerHTML = `
+      <div><strong>White:</strong> ${whitePieces} pieces (${whiteValue})</div>
+      <div><strong>Black:</strong> ${blackPieces} pieces (${blackValue})</div>
+      <div><strong>Material:</strong> ${whiteValue > blackValue ? "White +" : blackValue > whiteValue ? "Black +" : "Even"} ${Math.abs(whiteValue - blackValue)}</div>
+      <div><strong>Moves:</strong> ${moveHistory.length}</div>
+    `;
+  }
+
+  function undoLastMove() {
+    if (moveHistory.length === 0 || gameOver) return;
+    
+    board = boardHistory.pop();
+    moveHistory.pop();
+    whiteTurn = !whiteTurn;
+    
+    updateStats();
+    updateMoveHistory();
+    renderBoard();
+    updateStatus();
+    notificationsEl.textContent = "Move undone ↶";
+    setTimeout(() => {
+      notificationsEl.textContent = "";
+    }, 2000);
+ 
+      to: toSquare,
+      captured: captured,
+      player: whiteTurn ? "Black" : "White"
+    });
+    
+    updateMoveHistory();
+    updateStats();
+    
   function makeMove(sr, sc, tr, tc) {
     board[tr][tc] = board[sr][sc];
     board[sr][sc] = "";
@@ -458,16 +542,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (piece === "♖" || piece === "♜") slide(dirs.rook);
-    if (piece === "♗" || piece === "♝") slide(dirs.bishop);
-    if (piece === "♕" || piece === "♛") slide(dirs.queen);
+    const depth = difficultyDepth[difficulty] || 2;
 
-    if (piece === "♘" || piece === "♞") {
-      [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]].forEach(([dr,dc])=>{
-        const nr=r+dr,nc=c+dc;
-        if(nr>=0&&nr<8&&nc>=0&&nc<8 && (!testBoard[nr][nc] || isWhite(piece)!==isWhite(testBoard[nr][nc])))
-          moves.push({r:nr,c:nc});
-      });
-    }
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        if (board[r][c] && isBlack(board[r][c])) {
+          const moves = getLegalMoves(r, c);
+          moves.forEach(m => {
+            const testBoard = board.map(row => [...row]);
+            testBoard[m.r][m.c] = testBoard[r][c];
+            testBoard[r][c] = "";
+            const score = minimax(testBoard, depth
 
     if (piece === "♔" || piece === "♚") {
       for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
@@ -494,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (testBoard[r][c] && isBlack(testBoard[r][c])) {
             const moves = getLegalMovesOnBoard(testBoard, r, c);
             for (let move of moves) {
+    difficulty = difficultySelect.value;
               const newBoard = testBoard.map(row => [...row]);
               newBoard[move.r][move.c] = newBoard[r][c];
               newBoard[r][c] = "";
@@ -560,7 +646,20 @@ document.addEventListener("DOMContentLoaded", () => {
     makeMove(move.sr, move.sc, move.tr, move.tc);
     renderBoard();
 
-    if (checkGameEnd()) {
+   
+
+  if (undoBtn) {
+    undoBtn.onclick = () => {
+      if (!isLocalMultiplayer) {
+        notificationsEl.textContent = "Cannot undo in AI mode";
+        setTimeout(() => {
+          notificationsEl.textContent = "";
+        }, 2000);
+        return;
+      }
+      undoLastMove();
+    };
+  } if (checkGameEnd()) {
       winnerScreen.classList.remove("hidden");
     }
   }
